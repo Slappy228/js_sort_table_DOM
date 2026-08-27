@@ -4,6 +4,48 @@
 const thead = document.querySelector('thead');
 const tbody = document.querySelector('tbody');
 
+const parseCurrency = (str) => +str.slice(1).split(',').join('');
+const parseNumber = (str) => +str.trim();
+
+const columnConfigs = {
+  Name: {
+    index: 0,
+    comparator: (a, b) => a.localeCompare(b),
+  },
+  Position: {
+    index: 1,
+    comparator: (a, b) => a.localeCompare(b),
+  },
+  Age: {
+    index: 2,
+    comparator: (a, b) => parseNumber(a) - parseNumber(b),
+  },
+  Salary: {
+    index: 3,
+    comparator: (a, b) => parseCurrency(a) - parseCurrency(b),
+  },
+};
+
+function sortByColumn(headerKey) {
+  const config = columnConfigs[headerKey];
+
+  if (!config) {
+    return;
+  }
+
+  const { index, comparator } = config;
+  const rows = [...tbody.querySelectorAll('tr')];
+
+  rows.sort((rowA, rowB) => {
+    const valA = rowA.cells[index].textContent;
+    const valB = rowB.cells[index].textContent;
+
+    return comparator(valA, valB);
+  });
+
+  tbody.append(...rows);
+}
+
 thead.addEventListener('click', (clickEvent) => {
   const th = clickEvent.target.closest('th');
 
@@ -11,49 +53,7 @@ thead.addEventListener('click', (clickEvent) => {
     return;
   }
 
-  const trItems = tbody.querySelectorAll('tr');
-  const trArr = [...trItems];
+  const headerKey = th.textContent.trim();
 
-  if (th.textContent === 'Name') {
-    const sortedArr = trArr.sort((a, b) =>
-      a.cells[0].textContent.localeCompare(b.cells[0].textContent),
-    );
-
-    sortedArr.forEach((item) => {
-      tbody.append(item);
-    });
-  }
-
-  if (th.textContent === 'Position') {
-    const sortedArr = trArr.sort((a, b) =>
-      a.cells[1].textContent.localeCompare(b.cells[1].textContent),
-    );
-
-    sortedArr.forEach((item) => {
-      tbody.append(item);
-    });
-  }
-
-  if (th.textContent === 'Age') {
-    const sortedArr = trArr.sort(
-      (a, b) =>
-        a.cells[2].textContent.toString() - b.cells[2].textContent.toString(),
-    );
-
-    sortedArr.forEach((item) => {
-      tbody.append(item);
-    });
-  }
-
-  if (th.textContent === 'Salary') {
-    const sortedArr = trArr.sort(
-      (a, b) =>
-        +a.cells[3].textContent.slice(1).split(',').join('') -
-        +b.cells[3].textContent.slice(1).split(',').join(''),
-    );
-
-    sortedArr.forEach((item) => {
-      tbody.append(item);
-    });
-  }
+  sortByColumn(headerKey);
 });
